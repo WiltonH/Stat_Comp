@@ -93,6 +93,9 @@ Show that the ratio $f(x)/g(x)$ of $N(0, 1)$ to Cauchy densities is maximized at
 Can we use acceptance-rejection with proposals from $N(0, 1)$ to sample from Cauchy distribution? Explain why or why not.
 
 \paragraph{Solution:}
+```{r}
+runif(10)
+```
 
 
 
