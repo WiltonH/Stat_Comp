@@ -95,6 +95,7 @@ Can we use acceptance-rejection with proposals from $N(0, 1)$ to sample from Cau
 \paragraph{Solution:}
 ```{r}
 runif(10)
+a=123
 ```
 
 
