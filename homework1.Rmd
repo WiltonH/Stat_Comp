@@ -9,8 +9,7 @@ output: pdf_document
 
 \pagebreak
 
-# Problem 1
-
+# Problem 
 Simulate a sequence of uniform random numbers with R function `runif()`. Make 3-tuples with every 3 consecutive numbers from the sequence. Visualize the tuples in the cube $[0, 1]^3$ and test the uniformity of these tuples with Pearson’s $\chi^2$ test.
 
 \paragraph{Solution:}
@@ -94,8 +93,6 @@ Show that the ratio $f(x)/g(x)$ of $N(0, 1)$ to Cauchy densities is maximized at
 Can we use acceptance-rejection with proposals from $N(0, 1)$ to sample from Cauchy distribution? Explain why or why not.
 
 \paragraph{Solution:}
-
-
 
 
 
