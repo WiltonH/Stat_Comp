@@ -5,16 +5,17 @@ date: 2019/03/09
 output: pdf_document
 ---
 
-\tableofcontents
+***
 
-\pagebreak
+# Problem 1
 
-# Problem 
 Simulate a sequence of uniform random numbers with R function `runif()`. Make 3-tuples with every 3 consecutive numbers from the sequence. Visualize the tuples in the cube $[0, 1]^3$ and test the uniformity of these tuples with Pearson’s $\chi^2$ test.
 
 \paragraph{Solution:}
 
-```{r chunk_name, fig.height=5, fig.width=5, fig.align="center"}
+We can solve the problem with R, here are codes with comments below:
+
+```{r chunk_name, fig.height=5.5, fig.width=5.5, fig.align="center"}
 # generate 3-tuples dataframe
 set.seed(666)
 dat1 = as.data.frame(array(runif(300),c(100,3)))
@@ -28,6 +29,8 @@ scatterplot3d(dat1,xlim=c(0,1),ylim=c(0,1),zlim=c(0,1),pch=20)
 chisq.test(dat1)
 ```
 
+The p-value of Pearson’s test is almost equal to $1$, which means the generated data follows the Uniform distribution.
+
 ***
 
 # Problem 2
@@ -36,13 +39,17 @@ Prove that $F(X) \sim U(0, 1)$ for a continuous random variable $X$ with CDF $F(
 
 \paragraph{Proof:}
 
-Since the random variable $X$ is continuous, it's PDF $f(x)$ must exist. We denote it's CDF as:
+We suppose the random variable $X\sim F(\cdot)$ is continuous and it’s CDF is arbitrary, it's PDF $f(t)$ must exist. We denote it's CDF as:
 
-$$F(X) = \int_{-\infty}^{X}{f(t)}{dt}$$
+$$F(X) = P\{T \leq t\}= \int_{-\infty}^{X}{f(t)}{dt}$$
 
-which is monotone increasing and continuous. Hence the CDF's inverse function $F^{-1}$ must exist. If $F(X) \sim U(0,1)$, then $F^{-1}(F(X))=X \sim F(\cdot)$.
+$$P\{T \leq t\}= P\{F(X)\leq t\}=P\{X \leq F^{-1}(t)\}=F[F^{-1}(t)]=t$$
 
-In the discrete case, there is no inverse function, therefore this is not true if $X$ follows a discrete distribution.
+which is monotone increasing and continuous with domain $(-\infty,\infty)$ and range $[0,1]$. Hence the CDF's inverse function $F^{-1}$ must exist. $F(x)$ must be with domain $[0,1]$ and range $[0,1]$.
+
+Therefore $F(x)\sim U(0,1)$
+
+In the discrete case, there is no continuous PDF and inverse function, therefore this is not true if $X$ follows a discrete distribution.
 
 Q.E.D.
 
@@ -58,11 +65,35 @@ Express the failure time of the memory bank as a function of a single variable $
 
 \paragraph{Solution:}
 
+From prob.3.a, we denote $T$ as the failure times of bank, and $X_i$ as the failure times of each unit. It is obviously that $X_i \sim F$.
+
+When the second unit breaks down, the bank fails with $T = X_{(2)}$. Since $X_i \sim U(0,1)$, $X_{(2)}\sim Beta(2,4)$ and $T = F^{-1}(U_{(2)})$, $U_2 \sim G^{-1}(U)$.
+
+As a result, $T = F^{-1}(G^{-1}(U))$, where $\alpha=2, \ \beta=4$.
+
 ## b)
 
 Suppose that $F$ is the exponential distribution with mean $500,000$ (hours). Sample $10,000$ memory bank lifetimes using the expression from part a). Estimate the mean memory bank lifetime and give a $99\%$ confidence interval for it.
 
 \paragraph{Solution:}
+
+We can obtain that the parameters of Beta distribution are $\alpha=2,\beta=4$.
+
+```{r}
+# generate 10000 exponential variables via inverse transformation
+set.seed(666)
+n.unif = rbeta(10000,2,4)
+n.exp = -(500000)*log(1-n.unif)
+n.exp.bar = sum(n.exp)/10000
+n.exp.bar
+# 99% confidence interval
+chi.1 = qchisq(0.005, 10000, lower.tail = F)
+chi.2 = qchisq(0.995, 10000, lower.tail = F)
+10000*n.exp.bar/chi.1
+10000*n.exp.bar/chi.2
+```
+
+After computation, we conclude that the mean memory bank lifetime is $227933.3$, and it’s $99\%$ confidence interval is $[219842.3,236458.1]$.
 
 ## c)
 
@@ -70,11 +101,65 @@ If we didn’t use a redundant system, we might instead use $4$ memory units and
 
 \paragraph{Solution:}
 
+If we didn’t use a redundant system, the paramaters of Beta distribution will turn to $\alpha=1, \ \beta=4$.
+
+```{r}
+# generate 10000 exponential variables via inverse transformation
+set.seed(666)
+n.unif = rbeta(10000,1,4)
+n.exp2 = -(500000)*log(1-n.unif)
+n.exp.bar2 = sum(n.exp2)/10000
+n.exp.bar2
+# 99% confident interval
+chi.1 = qchisq(0.005, 10000, lower.tail = F)
+chi.2 = qchisq(0.995, 10000, lower.tail = F)
+10000*n.exp.bar2/chi.1
+10000*n.exp.bar2/chi.2
+rate = n.exp.bar/n.exp.bar2
+rate
+```
+
+
+After computation, we conclude that the mean memory bank lifetime without redundant system is $122847.8$, and it’s $99\%$ confidence interval is $[118487.1,127442.4]$.
+
+And the rate between a) and b) is $1.855411>1.25$ therefore it doesn’t last at least $1.25$ times as long on average.
+
 ## d)
 
 Compare the speed of sampling by inversion with that of generating $5$ exponential variables, sorting them and picking out the second smallest.
 
 \paragraph{Solution:}
+
+```{r}
+set.seed(666)
+# case 1
+t1.1 = Sys.time()
+n.unif = rbeta(10000,2,4)
+n.exp = -(500000)*log(1-n.unif)
+n.exp.bar = sum(n.exp)/10000
+t1.2 = Sys.time()
+t1 = t1.2 - t1.1
+t1
+# case 2
+t2.1 = Sys.time()
+n = 1
+repeat { 
+   sort(rexp(5,1/500000))[2]
+   n = n+1
+   if(n==10000) {
+      break
+   }
+}
+t2.2 = Sys.time()
+t2 = t2.2 - t2.1
+t2
+```
+
+The speed of inverse function method is about $0.01458049$ seconds.
+
+The speed of tranditional method is about $0.5428333$ seconds.
+
+Therefore, the first method is performing better than the second one.
 
 ***
 
@@ -88,15 +173,37 @@ Show that the ratio $f(x)/g(x)$ of $N(0, 1)$ to Cauchy densities is maximized at
 
 \paragraph{Proof:}
 
+Since $f(x) \sim N(0,1),\ \ g(x) \sim C(1,0)$, we can obtain their PDF that
+
+$$f(x)=\frac{1}{\sqrt{2\pi}}e^{-\dfrac{x^2}{2}},\ \ \ g(x)=\dfrac{1}{\pi(1+x^2)}$$
+Then we denote that
+
+$$h(x) = \frac{f(x)}{g(x)} = \sqrt{\dfrac{\pi}{2}}(1+x^2)e^{-\dfrac{x^2}{2}}$$
+
+In order to find the maximum of $h(x)$, we should find the root of $h^{\prime}(x)$
+
+$$
+h^{\prime}(x)= \sqrt {\dfrac {\pi }{2}}e^{-\dfrac {x^{2}}{2}}x\left( x+1\right) \left( x-1\right)=0\ \  \Rightarrow \ \ \ x=0,\pm1
+$$
+
+$$\Rightarrow \ \ \ h(0)=\sqrt{\frac{\pi}{2}} \ \ \ \ < \ \ \ \ h(\pm1)=\sqrt{2\pi}e^{\frac{1}{2}}$$
+
+Therefore, $x=\pm1$ is the maximum of $h(x)=f(x)/g(x)$.
+
+Q.E.D.
+
+
 ## b)
 
 Can we use acceptance-rejection with proposals from $N(0, 1)$ to sample from Cauchy distribution? Explain why or why not.
 
-\paragraph{Solution:}
-```{r}
-runif(10)
-a=123
-```
+\paragraph{Answer:}
+
+No, we cannot use acceptance-rejection with proposals from $N(0, 1)$ to sample from Cauchy distribution.
+
+Because Normal distribution has thin tails with the finite expectation $\mu$ and variance $\sigma$, on the contrary, Cauchy distribution has thick tails which it’s expectation and variance are approaching to infinity. If we use AR method to pick the sample from $N(0,1)$ out of the interval $3\sigma$, in which appearently there are almostly no samples, but Cauchy distribution still has lots of samples there.
+
+Therefore, we cannot use AR method with proposals from Normal distribution to sample from Cauchy distribution.
 
 
 
